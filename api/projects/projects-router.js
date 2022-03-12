@@ -2,6 +2,7 @@
 const express = require("express");
 const router = express.Router();
 const Projects = require("../projects/projects-model");
+const validateFunction = require("./projects-middleware");
 const server = require("../server");
 
 router.get("/", (req, res, next) => {
@@ -16,7 +17,7 @@ router.get("/", (req, res, next) => {
       });
     });
 });
-router.get("/:id", (req, res, next) => {
+router.get("/:id", validateFunction, (req, res, next) => {
   Projects.get(req.params.id)
     .then((projects) => {
       if (!projects) {
@@ -27,12 +28,7 @@ router.get("/:id", (req, res, next) => {
         res.status(200).json(projects);
       }
     })
-    .catch((err) => {
-      res.status(404).json({
-        message: "Could not load with the given id",
-        error: err.message,
-      });
-    });
+    .catch(next);
 });
 router.post("/", (req, res, next) => {
   Projects.insert(req.body)

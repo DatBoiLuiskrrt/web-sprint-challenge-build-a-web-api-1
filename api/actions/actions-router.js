@@ -2,7 +2,7 @@
 const express = require("express");
 const router = express.Router();
 const Actions = require("./actions-model");
-
+const validateFunction = require("./actions-middlware");
 router.get("/", (req, res, next) => {
   Actions.get()
     .then((actions) => {
@@ -15,17 +15,12 @@ router.get("/", (req, res, next) => {
       });
     });
 });
-router.get("/:id", (req, res, next) => {
+router.get("/:id", validateFunction, (req, res, next) => {
   Actions.get(req.params.id)
     .then((actions) => {
       res.status(200).json(actions);
     })
-    .catch((err) => {
-      res.status(404).json({
-        message: "Could not load users",
-        error: err.message,
-      });
-    });
+    .catch(next);
 });
 router.post("/", (req, res, next) => {
   Actions.insert(req.body)
