@@ -1,7 +1,7 @@
 // add middlewares here related to projects
 const Projects = require("./projects-model");
 
-const validateFunction = (req, res, next) => {
+const validateFunctionID = (req, res, next) => {
   Projects.get(req.params.id)
     .then((projects) => {
       if (!projects) {
@@ -10,7 +10,10 @@ const validateFunction = (req, res, next) => {
         });
       } else {
         req.projects = projects;
-        next();
+        next({
+          status: 404,
+          message: "User not found",
+        });
       }
     })
     .catch((err) => {
@@ -19,5 +22,16 @@ const validateFunction = (req, res, next) => {
       });
     });
 };
+function validateUser(req, res, next) {
+  const { name, description, completed } = req.body;
 
-module.exports = validateFunction;
+  if (!name || !description || completed === undefined) {
+    next({
+      status: 400,
+      message: "Missing required name and description fields",
+    });
+  } else {
+    next();
+  }
+}
+module.exports = { validateFunctionID, validateUser };

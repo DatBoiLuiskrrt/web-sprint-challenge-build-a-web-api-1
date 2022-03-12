@@ -2,7 +2,7 @@
 const express = require("express");
 const router = express.Router();
 const Projects = require("../projects/projects-model");
-const validateFunction = require("./projects-middleware");
+const { validateFunctionID, validateUser } = require("./projects-middleware");
 const server = require("../server");
 
 router.get("/", (req, res, next) => {
@@ -17,18 +17,8 @@ router.get("/", (req, res, next) => {
       });
     });
 });
-router.get("/:id", validateFunction, (req, res, next) => {
-  Projects.get(req.params.id)
-    .then((projects) => {
-      if (!projects) {
-        res.status(404).json({
-          message: "error",
-        });
-      } else {
-        res.status(200).json(projects);
-      }
-    })
-    .catch(next);
+router.get("/:id", validateFunctionID, (req, res, next) => {
+  res.json(req.projects);
 });
 router.post("/", (req, res, next) => {
   Projects.insert(req.body)
@@ -43,41 +33,39 @@ router.post("/", (req, res, next) => {
     });
 });
 router.put("/:id", (req, res, next) => {
-  Projects.update(req.params.id, req.body)
-    .then((projects) => {
-      if (!req.body.name || !req.body.description || req.body.completed) {
+  const { id } = req.params;
+  const { name, description, completed } = req.body;
+  Projects.update(id, req.body)
+    .then((project) => {
+      if (!req.body || !name || !description || completed == true) {
         res.status(400).json({
-          message: "Could not update",
-          error: err.message,
+          message: "error",
         });
       } else {
-        res.status(200).json(projects);
+        res.status(200).json(project);
       }
     })
-    .catch((err) => {
-      res.status(400).json({
-        message: "Could not update",
-        error: err.message,
-      });
-    });
+    .catch(next);
 });
-router.delete("/id:", (req, res, next) => {
-  Projects.remove(req.params.id)
-    .then((projects) => {
-      res.json(projects);
-    })
-    .catch((err) => {
-      res.status(500).res.json({
-        message: "Could not delete",
-        error: err.message,
-      });
-    });
+
+router.delete("/:id", validateFunctionID, async (req, res, next) => {
+  const { id } = req.params;
+  try {
+    const deleteProj = await Projects.remove(id);
+    res.json(deleteProj);
+  } catch (err) {
+    next(err);
+  }
 });
 
 router.get("/:id/actions", (req, res, next) => {
   Projects.getProjectActions(re.params.id)
     .then((actions) => {
-      res.status(200).res.json(actions);
+      if (!req.params.id) {
+        res.json([]);
+      } else {
+        res.status(200).json(actions);
+      }
     })
     .catch((err) => {
       res.status(404).json({
@@ -86,4 +74,5 @@ router.get("/:id/actions", (req, res, next) => {
       });
     });
 });
+
 module.exports = router;
