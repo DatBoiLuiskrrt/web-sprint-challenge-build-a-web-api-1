@@ -20,4 +20,14 @@ const validateFunction = (req, res, next) => {
     });
 };
 
-module.exports = validateFunction;
+const validateBody = (req, res, next) => {
+  if (!req.body.project_id || !req.body.description || !req.body.notes) {
+    res.status(400).json({
+      message: "Missing project id or description or notes",
+    });
+  } else {
+    next();
+  }
+};
+
+module.exports = { validateFunction, validateBody };
