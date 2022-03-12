@@ -49,7 +49,7 @@ router.post("/", (req, res, next) => {
 router.put("/:id", (req, res, next) => {
   Projects.update(req.params.id, req.body)
     .then((projects) => {
-      if (!req.body) {
+      if (!req.body.name || !req.body.description || req.body.completed) {
         res.status(400).json({
           message: "Could not update",
           error: err.message,
@@ -81,7 +81,7 @@ router.delete("/id:", (req, res, next) => {
 router.get("/:id/actions", (req, res, next) => {
   Projects.getProjectActions(re.params.id)
     .then((actions) => {
-      res.status(200).json(actions);
+      res.status(200).res.json(actions);
     })
     .catch((err) => {
       res.status(404).json({
